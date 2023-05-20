@@ -1,0 +1,263 @@
+.equ R1_BACK, 32
+.equ R2_BACK, 33
+
+START:
+    DIS I
+    DIS TCNTI
+    STRT T
+    CALL UART_INIT
+    MOV A, #0x00
+    CALL PRINT_HEX
+    MOV A, #0x69
+    CALL PRINT_HEX
+    MOV A, #0xFF
+    CALL PRINT_HEX
+    MOV A, #0xA7
+    CALL PRINT_HEX
+    CALL NEWL
+    
+LOOP:
+    MOV R1, #3
+    MOV R2, #4
+    MOV A, R1
+    CALL PRINT_HEX
+    MOV A, #42
+    CALL UART_WRITE
+    MOV A, R2
+    CALL PRINT_HEX
+    MOV A, #61
+    CALL UART_WRITE
+    CALL MUL_8_8
+    MOV A, R3
+    CALL PRINT_HEX
+    CALL NEWL
+    
+    MOV R1, #22
+    MOV R2, #8
+    MOV A, R1
+    CALL PRINT_HEX
+    MOV A, #42
+    CALL UART_WRITE
+    MOV A, R2
+    CALL PRINT_HEX
+    MOV A, #61
+    CALL UART_WRITE
+    CALL MUL_8_8
+    MOV A, R3
+    CALL PRINT_HEX
+    CALL NEWL
+    
+    MOV R1, #22
+    MOV R2, #0
+    MOV A, R1
+    CALL PRINT_HEX
+    MOV A, #42
+    CALL UART_WRITE
+    MOV A, R2
+    CALL PRINT_HEX
+    MOV A, #61
+    CALL UART_WRITE
+    CALL MUL_8_8
+    MOV A, R3
+    CALL PRINT_HEX
+    CALL NEWL
+    
+    MOV R1, #0
+    MOV R2, #22
+    MOV A, R1
+    CALL PRINT_HEX
+    MOV A, #42
+    CALL UART_WRITE
+    MOV A, R2
+    CALL PRINT_HEX
+    MOV A, #61
+    CALL UART_WRITE
+    CALL MUL_8_8
+    MOV A, R3
+    CALL PRINT_HEX
+    CALL NEWL
+    
+    MOV R1, #25
+    MOV R2, #77
+    MOV A, R1
+    CALL PRINT_HEX
+    MOV A, #42
+    CALL UART_WRITE
+    MOV A, R2
+    CALL PRINT_HEX
+    MOV A, #61
+    CALL UART_WRITE
+    CALL MUL_8_8
+    MOV A, R3
+    CALL PRINT_HEX
+    CALL NEWL
+    
+    MOV R1, #25
+    MOV R2, #77
+    MOV A, R1
+    CALL PRINT_HEX
+    MOV A, #42
+    CALL UART_WRITE
+    MOV A, R2
+    CALL PRINT_HEX
+    MOV A, #61
+    CALL UART_WRITE
+    CALL MUL_8_16
+    MOV A, R4
+    CALL PRINT_HEX
+    MOV A, R3
+    CALL PRINT_HEX
+    CALL NEWL
+    
+    MOV R1, #5
+    MOV R2, #3
+    MOV A, R1
+    CALL PRINT_HEX
+    MOV A, #42
+    CALL UART_WRITE
+    MOV A, R2
+    CALL PRINT_HEX
+    MOV A, #61
+    CALL UART_WRITE
+    CALL MUL_8_16
+    MOV A, R4
+    CALL PRINT_HEX
+    MOV A, R3
+    CALL PRINT_HEX
+    CALL NEWL
+    
+WAIT_FOR_BTN:
+    JNT0 WAIT_FOR_BTN
+    JMP LOOP
+
+MUL_8_8:
+    MOV R3, #0
+    MOV A, R1
+MUL_8_8_LOOP:
+    CLR C
+    RRC A
+    MOV R1, A
+    JNC MUL_8_8_NO_CARRY
+    MOV A, R3
+    ADD A, R2
+    MOV R3, A
+MUL_8_8_NO_CARRY:
+    MOV A, R2
+    ADD A, R2
+    MOV R2, A
+    MOV A, R1
+    JNZ MUL_8_8_LOOP
+    RET
+    
+MUL_8_16:
+    MOV R3, #0
+    MOV R4, #0
+    MOV R5, #0
+    MOV A, R1
+MUL_8_16_LOOP:
+    CLR C
+    RRC A
+    MOV R1, A
+    JNC MUL_8_16_NO_CARRY
+    MOV A, R3
+    ADD A, R2
+    MOV R3, A
+    MOV A, R4
+    ADDC A, R5
+    MOV R4, A
+MUL_8_16_NO_CARRY:
+    MOV A, R2
+    ADD A, R2
+    MOV R2, A
+    MOV A, R5
+    ADDC A, R5
+    MOV R5, A
+    MOV A, R1
+    JNZ MUL_8_16_LOOP
+    RET
+    
+PRINT_HEX:
+    MOV R0, #R1_BACK
+    XCH A, R1
+    MOV @R0, A
+    INC R0
+    MOV A, R2
+    MOV @R0, A
+    MOV A, R1
+    CLR F0
+    SWAP A
+PRINT_HEX_DIGIT:
+    ANL A, #15
+    MOV R2, A
+    ADD A, #0b11110110
+    JC ABOVE_10_A
+    MOV A, R2
+    ADD A, #48
+    JMP NOT_ABOVE_10_A
+ABOVE_10_A:
+    ADD A, #65
+NOT_ABOVE_10_A:
+    CALL UART_WRITE
+    
+    JF0 PRINT_HEX_END
+    CPL F0
+    MOV A, R1
+    JMP PRINT_HEX_DIGIT
+    
+PRINT_HEX_END:
+    MOV R0, #R2_BACK
+    MOV A, @R0
+    MOV R2, A
+    DEC R0
+    MOV A, @R0
+    XCH A, R1
+    RETR
+    
+NEWL:
+    MOV A, #13
+    CALL UART_WRITE
+    MOV A, #10
+    CALL UART_WRITE
+    RET
+
+UART_WRITE:
+	ANL P2,#249
+	OUTL BUS,A
+	ORL P2,#2
+UART_WRITE_DELAY_LOOP:
+	IN A,P2
+	ANL A,#8
+	JZ UART_WRITE_DELAY_LOOP
+	RET
+
+	;Connection of P8251 to microcontroller:
+	;DB - DB7 = D0 - D7
+	;P20 = RESET
+	;P21 = CS (may be omitted, and CS pulled the GND on P8251, if only device on bus)
+	;P22 = C/D
+	;P23 = TxEMPTY
+UART_INIT:
+	MOV A,#0b00001111
+	OUTL P2,A
+	CALL DELAY
+	ANL P2,#254
+	CALL DELAY
+	ANL P2,#253
+	MOV A,#0b01001110 ; Mode word: 1 stop bit, no parity, 8-bit, 16X baud rate divisor
+	OUTL BUS,A
+	MOV A,#0b00110011 ; Command word: Enable TX, but not RX, reset error flags
+	OUTL BUS,A
+	ORL P2,#2
+	RET
+
+DELAY:
+	MOV A,#0xFF
+DELAY_LOOP:
+	ADD A,#0xFF
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	JNZ DELAY_LOOP
+	RETR
