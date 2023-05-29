@@ -467,11 +467,11 @@ DELAY_LOOP:
 
 	; Program constants
 .equ M_WIDTH, 230
-.equ M_HEIGHT, 50
+.equ M_HEIGHT, 52
 .equ C1_PRE, 1101
 .equ C4_PRE, 2730
 .equ W_D2, 115
-.equ H_D2, 25
+.equ H_D2, 26
 
 	; Program settings
 ;.equ ZOOM, 2048
@@ -479,10 +479,15 @@ DELAY_LOOP:
 ;.equ IMAG, (~0x003AE320)+1
 ;.equ MAX_ITERS, 2048
 
-.equ ZOOM, 65536
-.equ RE, (~0x0032D355)+1
-.equ IMAG, 18457907
-.equ MAX_ITERS, 300
+;.equ ZOOM, 65536
+;.equ RE, (~0x0032D355)+1
+;.equ IMAG, 18457907
+;.equ MAX_ITERS, 300
+
+.equ ZOOM 16700000
+.equ RE 0
+.equ IMAG 0
+.equ MAX_ITERS 128
 
 WORD_COPY:
 	MOV R2, #4
